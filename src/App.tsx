@@ -3,33 +3,58 @@ import React, { useState } from 'react';
 interface TextEntry {
   id: number;
   content: string;
+  tags: string;
 }
+
+type EditMode = 'CONTENT' | 'TAGS' | null;
 
 function App() {
   const [texts, setTexts] = useState<TextEntry[]>([]);
   const [inputValue, setInputValue] = useState(''); // For the "Add" bar
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [editMode, setEditMode] = useState<EditMode>(null);
   const [editValue, setEditValue] = useState('');   // For the "Inline" editing
 
   const addText = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputValue.trim()) return;
-    setTexts([...texts, { id: Date.now(), content: inputValue }]);
+    setTexts([...texts, { id: Date.now(), content: inputValue, tags:"" }]);
     setInputValue('');
   };
 
-  const saveEdit = (id: number) => {
-    setTexts(texts.map(t => t.id === id ? { ...t, content: editValue } : t));
-    setEditingId(null);
-  };
-
-  const startEditing = (item: TextEntry) => {
+  const startEditingContent = (item: TextEntry) => {
     setEditingId(item.id);
+    setEditMode('CONTENT');
     setEditValue(item.content);
   };
 
+  const startEditingTags = (item: TextEntry) => {
+    setEditingId(item.id);
+    setEditMode('TAGS');
+    setEditValue(item.tags);
+  };
+
+  const saveEdit = (id: number) => {
+    setTexts(texts.map(t => {
+      if (t.id === id) {
+        return editMode === 'CONTENT' 
+          ? { ...t, content: editValue } 
+          : { ...t, tags: editValue };
+      }
+      return t;
+    }));
+    setEditingId(null);
+    setEditMode(null);
+  };
+
   return (
-    <div className="container">
+    <div className="container" style={{
+      // display: "flex", 
+      // flexDirection: "column", // Stack items vertically
+      // justifyContent: "center", // Horizontal center (since it's a column)
+      // alignItems: "center",     // Vertical center
+      // width: "100%"
+    }}>
       {/* ADD SECTION */}
       <form onSubmit={addText} className="input-group">
         <input 
@@ -42,33 +67,53 @@ function App() {
 
       {/* LIST SECTION */}
       <ul className="list">
-        {texts.map((item) => (
-          <li key={item.id} className="list-item">
-            {editingId === item.id ? (
-              // --- MODE: EDITING ---
-              <div className="edit-inline">
-                <input 
-                  value={editValue} 
-                  onChange={(e) => setEditValue(e.target.value)} 
-                  autoFocus 
-                />
-                <button onClick={() => saveEdit(item.id)}>Save</button>
-                <button onClick={() => setEditingId(null)}>Cancel</button>
-              </div>
-            ) : (
-              // --- MODE: VIEWING ---
-              <>
-                <span>{item.content}</span>
-                <div className="actions">
-                  <button onClick={() => startEditing(item)}>Edit</button>
-                  <button onClick={() => setTexts(texts.filter(t => t.id !== item.id))}>
-                    Delete
-                  </button>
+        {texts.map((item) => {
+          const isEditing = editingId === item.id;
+
+          return (
+            <li key={item.id} className="list-item" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+              {isEditing ? (
+                // --- EDITING UI (Content OR Tags) ---
+                <div style={{ display: 'flex', gap: '5px', width: '100%' }}>
+                  <input 
+                    value={editValue} 
+                    onChange={(e) => setEditValue(e.target.value)} 
+                    autoFocus 
+                    style={{ flex: 1 }}
+                    placeholder={editMode === 'TAGS' ? "Edit tags..." : "Edit content..."}
+                  />
+                  <button onClick={() => saveEdit(item.id)}>Save</button>
+                  <button onClick={() => { setEditingId(null); setEditMode(null); }}>Cancel</button>
                 </div>
-              </>
-            )}
-          </li>
-        ))}
+              ) : (
+                // --- VIEWING UI ---
+                <div style={{ display: 'flex', gap: '10px', width: '100%', alignItems: 'center' }}>
+                  <div style={{ flex: 1 }}>
+                    <strong style={{ marginRight: '10px' }}>{item.content}</strong>
+                    
+                    {/* Transform "tag1,tag2" into "#tag1 #tag2" */}
+                    <span className="tags-container">
+                      {item.tags.split(',')
+                        .filter(t => t.trim() !== "")
+                        .map((tag, index) => (
+                          <span key={index} style={{ color: '#007bff', fontSize: '0.9rem', marginRight: '8px' }}>
+                            #{tag.trim()}
+                          </span>
+                        ))
+                      }
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '5px' }}>
+                    <button onClick={() => startEditingTags(item)}>Tags</button>
+                    <button onClick={() => startEditingContent(item)}>Edit</button>
+                    <button onClick={() => setTexts(texts.filter(t => t.id !== item.id))}>Delete</button>
+                  </div>
+                </div>
+              )}
+            </li>
+          );
+        })}
       </ul>
     </div>
   );
