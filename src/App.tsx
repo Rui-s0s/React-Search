@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import "./App.css"
+
 
 interface TextEntry {
   id: number;
@@ -48,13 +50,7 @@ function App() {
   };
 
   return (
-    <div className="container" style={{
-      // display: "flex", 
-      // flexDirection: "column", // Stack items vertically
-      // justifyContent: "center", // Horizontal center (since it's a column)
-      // alignItems: "center",     // Vertical center
-      // width: "100%"
-    }}>
+    <div className="container">
       {/* ADD SECTION */}
       <form onSubmit={addText} className="input-group">
         <input 
@@ -71,40 +67,38 @@ function App() {
           const isEditing = editingId === item.id;
 
           return (
-            <li key={item.id} className="list-item" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+            <li key={item.id} className="list-item">
               {isEditing ? (
-                // --- EDITING UI (Content OR Tags) ---
-                <div style={{ display: 'flex', gap: '5px', width: '100%' }}>
+                // --- MODE: EDITING ---
+                <div className="item-wrapper">
                   <input 
+                    className="edit-input"
                     value={editValue} 
                     onChange={(e) => setEditValue(e.target.value)} 
                     autoFocus 
-                    style={{ flex: 1 }}
                     placeholder={editMode === 'TAGS' ? "Edit tags..." : "Edit content..."}
                   />
-                  <button onClick={() => saveEdit(item.id)}>Save</button>
-                  <button onClick={() => { setEditingId(null); setEditMode(null); }}>Cancel</button>
+                  <div className="actions">
+                    <button onClick={() => saveEdit(item.id)}>Save</button>
+                    <button onClick={() => { setEditingId(null); setEditMode(null); }}>Cancel</button>
+                  </div>
                 </div>
               ) : (
-                // --- VIEWING UI ---
-                <div style={{ display: 'flex', gap: '10px', width: '100%', alignItems: 'center' }}>
-                  <div style={{ flex: 1 }}>
-                    <strong style={{ marginRight: '10px' }}>{item.content}</strong>
-                    
-                    {/* Transform "tag1,tag2" into "#tag1 #tag2" */}
+                // --- MODE: VIEWING ---
+                <div className="item-wrapper">
+                  <div className="content-area">
+                    <strong>{item.content}</strong>
                     <span className="tags-container">
                       {item.tags.split(',')
                         .filter(t => t.trim() !== "")
                         .map((tag, index) => (
-                          <span key={index} style={{ color: '#007bff', fontSize: '0.9rem', marginRight: '8px' }}>
-                            #{tag.trim()}
-                          </span>
+                          <span key={index} className="tag">#{tag.trim()}</span>
                         ))
                       }
                     </span>
                   </div>
 
-                  <div style={{ display: 'flex', gap: '5px' }}>
+                  <div className="actions">
                     <button onClick={() => startEditingTags(item)}>Tags</button>
                     <button onClick={() => startEditingContent(item)}>Edit</button>
                     <button onClick={() => setTexts(texts.filter(t => t.id !== item.id))}>Delete</button>

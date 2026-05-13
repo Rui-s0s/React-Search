@@ -1,8 +1,16 @@
+/* Container holds everything and centers children horizontally */
 .container {
-  max-width: 500px;
-  margin: 50px auto;
-  font-family: sans-serif;
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  width: 100%;
+}
+
+/* The Add Form and the List are constrained to 400px */
+.input-group, .list {
+  width: 100%;
+  max-width: 400px;
 }
 
 .input-group {
@@ -11,11 +19,8 @@
   margin-bottom: 20px;
 }
 
-input {
+.input-group input {
   flex: 1;
-  padding: 10px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
 }
 
 .list {
@@ -25,17 +30,41 @@ input {
 
 .list-item {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 10px;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding: 8px;
   border-bottom: 1px solid #eee;
 }
 
-.delete-btn {
-  background-color: #ff4444;
-  color: white;
-  border: none;
-  padding: 5px 10px;
-  margin-left: 5px;
-  cursor: pointer;
+/* Common container for both Edit and View modes */
+.item-wrapper {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  align-items: center;
+}
+
+.content-area {
+  flex: 1;
+}
+
+.content-area strong {
+  margin-right: 10px;
+}
+
+.tag {
+  color: #007bff;
+  font-size: 0.9rem;
+  margin-right: 8px;
+}
+
+.actions {
+  display: flex;
+  gap: 5px;
+}
+
+/* Makes the edit input grow to fill space */
+.edit-input {
+  flex: 1;
 }
