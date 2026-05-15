@@ -51,16 +51,6 @@ function App() {
 
   return (
     <div className="container">
-      {/* ADD SECTION */}
-      <form onSubmit={addText} className="input-group">
-        <input 
-          value={inputValue} 
-          onChange={(e) => setInputValue(e.target.value)} 
-          placeholder="Add new item..." 
-        />
-        <button type="submit">Add</button>
-      </form>
-
       {/* LIST SECTION */}
       <ul className="list">
         {texts.map((item) => {
@@ -76,6 +66,14 @@ function App() {
                     value={editValue} 
                     onChange={(e) => setEditValue(e.target.value)} 
                     autoFocus 
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        saveEdit(item.id);
+                      } else if (e.key === 'Escape') {
+                        setEditingId(null);
+                        setEditMode(null);
+                      }
+                    }} 
                     placeholder={editMode === 'TAGS' ? "Edit tags..." : "Edit content..."}
                   />
                   <div className="actions">
@@ -108,6 +106,28 @@ function App() {
             </li>
           );
         })}
+        {/* ADD SECTION */}
+        <form 
+          onSubmit={(e) => {
+            e.preventDefault(); // Stop the page refresh!
+            addText(e);
+          }} 
+          className="input-group"
+        >
+          <input 
+            value={inputValue} 
+            onChange={(e) => setInputValue(e.target.value)} 
+            placeholder="Add new item..." 
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') {
+                setInputValue(''); // Clear the input
+                (e.target as HTMLInputElement).blur(); // Remove focus from the box
+              }
+            }}
+          />
+          {/* You can keep the button or remove it; Enter will still work */}
+          <button type="submit">Add</button>
+        </form>
       </ul>
     </div>
   );
