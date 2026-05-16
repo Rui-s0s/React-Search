@@ -44,8 +44,6 @@
   width: 100%;
   border-bottom: 1px solid #eee;
   max-height: 250px;     /* Adjust this height limit to your liking */
-  overflow-y: auto;      /* Scrollbar appears directly on the post if content is huge */
-  overflow-x: hidden;
 }
 
 /* --- VIEW MODE: POST CONTAINER --- */
@@ -78,10 +76,17 @@
 /* 2. Content Area (Middle Block) */
 .content-area {
   width: 100%;
-  word-break: break-word; 
   font-size: 1.1rem;
-}
+  overflow: hidden;         /* Required for both versions */
 
+  /* 1. The classic, universally supported WebKit way */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;   
+
+  /* 2. The official standard way (for future-proofing) */
+  line-clamp: 3;            
+}
 /* 3. Footer Row (Bottom Block) */
 .item-footer {
   display: flex;

@@ -1,132 +1,86 @@
 import React, { useState } from 'react';
-import "./App.css"
+import { PostItem } from './components/PostItem';
+import { AddItemForm } from './components/AddItemForm';
+import { TagSearch } from './components/TagSearch'; // 1. Import Search Bar
+import "./App.css";
 
-
-interface TextEntry {
-  id: number;
-  content: string;
-  tags: string;
-}
-
-type EditMode = 'CONTENT' | 'TAGS' | null;
+// Remember to use 'import type' for your types!
+import type { TextEntry, EditMode } from './types/post.types';
 
 function App() {
   const [texts, setTexts] = useState<TextEntry[]>([]);
-  const [inputValue, setInputValue] = useState(''); // For the "Add" bar
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editMode, setEditMode] = useState<EditMode>(null);
-  const [editValue, setEditValue] = useState('');   // For the "Inline" editing
+  const [searchQuery, setSearchQuery] = useState(''); // 2. Search State
 
-  const addText = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inputValue.trim()) return;
-    setTexts([...texts, { id: Date.now(), content: inputValue, tags:"" }]);
-    setInputValue('');
+  const handleAddItem = (content: string) => {
+    setTexts([...texts, { id: Date.now(), content, tags: "" }]);
   };
 
-  const startEditingContent = (item: TextEntry) => {
-    setEditingId(item.id);
-    setEditMode('CONTENT');
-    setEditValue(item.content);
+  const handleStartEdit = (id: number, mode: EditMode) => {
+    setEditingId(id);
+    setEditMode(mode);
   };
 
-  const startEditingTags = (item: TextEntry) => {
-    setEditingId(item.id);
-    setEditMode('TAGS');
-    setEditValue(item.tags);
-  };
-
-  const saveEdit = (id: number) => {
+  const handleSaveEdit = (id: number, newValue: string) => {
     setTexts(texts.map(t => {
       if (t.id === id) {
         return editMode === 'CONTENT' 
-          ? { ...t, content: editValue } 
-          : { ...t, tags: editValue };  
+          ? { ...t, content: newValue } 
+          : { ...t, tags: newValue };  
       }
       return t;
     }));
+    handleCancelEdit();
+  };
+
+  const handleCancelEdit = () => {
     setEditingId(null);
     setEditMode(null);
   };
 
+  const handleDeleteItem = (id: number) => {
+    setTexts(texts.filter(t => t.id !== id));
+  };
+
+  // 3. THE FILTER MAGIC
+  // This takes your original master list and calculates a temporary 
+  // filtered list on every single keystroke.
+  const filteredTexts = texts.filter((item) => {
+    // If search is empty, show everything
+    if (!searchQuery.trim()) return true;
+
+    // Clean up the search term (remove '#' if the user types it)
+    const cleanQuery = searchQuery.replace('#', '').toLowerCase().trim();
+
+    // Check if any tag inside the item contains the search string
+    return item.tags
+      .toLowerCase()
+      .split(',')
+      .some(tag => tag.trim().includes(cleanQuery));
+  });
+
   return (
     <div className="container">
-      {/* LIST SECTION */}
+      {/* 4. Place Search bar at the top */}
+      <TagSearch value={searchQuery} onChange={setSearchQuery} />
+
+      {/* 5. Loop through filteredTexts instead of texts */}
       <ul className="list">
-        {texts.map((item) => {
-          const isEditing = editingId === item.id;
-
-          return (
-            <li key={item.id} className="list-item">
-              {isEditing ? (
-                // --- EDITING UI ---
-                <div className="item-wrapper" style={{ width: '100%' }}>
-                  <input 
-                    className="edit-input"
-                    value={editValue} 
-                    onChange={(e) => setEditValue(e.target.value)} 
-                    autoFocus 
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') saveEdit(item.id);
-                      if (e.key === 'Escape') { setEditingId(null); setEditMode(null); }
-                    }}
-                  />
-                </div>
-              ) : (
-                // --- VIEWING UI ---
-                <>
-                  <div className="post-container">
-                    {/* 1. TOP: Tags row with ellipsis handling */}
-                    <div className="tags-container">
-                      {item.tags.split(',')
-                        .filter(t => t.trim() !== "")
-                        .map((tag, index) => (
-                          <span key={index} className="tag">#{tag.trim()}</span>
-                        ))
-                      }
-                    </div>
-
-                    {/* 2. MIDDLE: Content Area that scrolls if it gets too big */}
-                    <div className="content-area">
-                      <strong>{item.content}</strong>
-                    </div>
-
-                    {/* 3. BOTTOM: Just the actions pinned to the right side */}
-                    <div className="item-footer">
-                      <div className="actions">
-                        <button onClick={() => startEditingTags(item)}>Tags</button>
-                        <button onClick={() => startEditingContent(item)}>Edit</button>
-                        <button onClick={() => setTexts(texts.filter(t => t.id !== item.id))}>Delete</button>
-                      </div>
-                    </div>
-                  </div>
-                </>
-              )}
-            </li>
-          );
-        })}
-        {/* ADD SECTION */}
-        <form 
-          onSubmit={(e) => {
-            e.preventDefault(); // Stop the page refresh!
-            addText(e);
-          }} 
-          className="input-group"
-        >
-          <input 
-            value={inputValue} 
-            onChange={(e) => setInputValue(e.target.value)} 
-            placeholder="Add new item..." 
-            onKeyDown={(e) => {
-              if (e.key === 'Escape') {
-                setInputValue(''); // Clear the input
-                (e.target as HTMLInputElement).blur(); // Remove focus from the box
-              }
-            }}
+        {filteredTexts.map((item) => (
+          <PostItem 
+            key={item.id}
+            item={item}
+            editingId={editingId}
+            editMode={editMode}
+            onStartEdit={handleStartEdit}
+            onSaveEdit={handleSaveEdit}
+            onCancelEdit={handleCancelEdit}
+            onDelete={handleDeleteItem}
           />
-          {/* You can keep the button or remove it; Enter will still work */}
-          <button type="submit">Add</button>
-        </form>
+        ))}
+        
+        <AddItemForm onAdd={handleAddItem} />
       </ul>
     </div>
   );
