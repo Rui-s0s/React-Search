@@ -39,11 +39,9 @@
   margin: 0;
 }
 
-/* Restored: This handles scrolling on a per-post level if content gets too tall */
 .list-item {
   width: 100%;
   border-bottom: 1px solid #eee;
-  max-height: 250px;     /* Adjust this height limit to your liking */
 }
 
 /* --- VIEW MODE: POST CONTAINER --- */
@@ -56,7 +54,7 @@
   box-sizing: border-box;
 }
 
-/* 1. Tags Container (Now at the top) */
+/* 1. Tags Container (Default: List View) */
 .tags-container {
   width: 100%;
   white-space: nowrap;      /* Forces all tags to stay on a single line */
@@ -65,28 +63,47 @@
   display: block;           /* Block display is required for text-overflow ellipsis to work */
 }
 
+/* 
+   NEW FIX FOR THE EXPANDED VIEW:
+   When inside the expanded container, undo the ellipsis limits 
+   and let the tags wrap naturally down to the next line.
+*/
+.expanded-view-container .tags-container {
+  white-space: normal;      /* Allows text wrapping */
+  overflow: visible;        /* Shows hidden content */
+  text-overflow: clip;      /* Removes the "..." ellipsis rule */
+}
+
 /* Clear gray tags styling */
 .tag {
   color: #888888;           /* Clean, subtle gray */
   font-size: 0.9rem;
   display: inline-block;
   margin-right: 8px;        /* Spaces out the inline elements */
+  margin-bottom: 4px;       /* Adds breathing room between rows if they wrap */
 }
 
 /* 2. Content Area (Middle Block) */
 .content-area {
   width: 100%;
   font-size: 1.1rem;
-  overflow: hidden;         /* Required for both versions */
+  word-break: break-word;
+}
 
-  /* 1. The classic, universally supported WebKit way */
+/* ONLY clamp the text when it's living inside the main interactive list dashboard */
+.clickable-post-wrapper .content-area {
   display: -webkit-box;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;   
-
-  /* 2. The official standard way (for future-proofing) */
-  line-clamp: 3;            
+  -webkit-line-clamp: 3;    
+  line-clamp: 3;
+  overflow: hidden;         
 }
+
+/* Hover effect on the list dashboard so the user knows they can click it */
+.clickable-post-wrapper:hover {
+  background-color: #f9f9f9;
+}
+
 /* 3. Footer Row (Bottom Block) */
 .item-footer {
   display: flex;
@@ -106,17 +123,31 @@
 }
 
 /* --- EDIT MODE --- */
-.item-wrapper {
+.item-wrapper-edit {
   display: flex;
-  gap: 10px;
+  flex-direction: column;
   width: 100%;
-  align-items: center;  
-  padding: 15px;
+  padding: 15px; 
+  box-sizing: border-box;
+  gap: 8px;
+}
+
+/* Make the textarea mimic the content block area layout */
+.edit-textarea {
+  width: 100%;
+  min-height: 90px;       
+  font-size: 1.1rem;      
+  font-family: inherit;   
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  resize: vertical;       
   box-sizing: border-box;
 }
 
-.edit-input {
-  flex: 1;
-  padding: 6px 10px;
-  font-size: 1rem;
+/* Focus styling to make the editing state look active */
+.edit-textarea:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 4px rgba(0, 123, 255, 0.2);
 }
