@@ -1,16 +1,13 @@
-import React from 'react';
 import type { TextEntry } from '../types/post.types';
 
 interface PostViewerProps {
   item: TextEntry;
-  onEditContent: () => void;
-  onEditTags: () => void;
-  onDelete: () => void;
 }
 
-export function PostViewer({ item, onEditContent, onEditTags, onDelete }: PostViewerProps) {
+export function PostViewer({ item }: PostViewerProps) {
   return (
     <div className="post-container">
+      {/* 1. TOP: Tags row with ellipsis handling */}
       <div className="tags-container">
         {item.tags.split(',')
           .filter(t => t.trim() !== "")
@@ -20,17 +17,12 @@ export function PostViewer({ item, onEditContent, onEditTags, onDelete }: PostVi
         }
       </div>
 
+      {/* 2. MIDDLE: Content Area */}
       <div className="content-area">
         <strong>{item.content}</strong>
       </div>
-
-      <div className="item-footer">
-        <div className="actions">
-          <button onClick={onEditTags}>Tags</button>
-          <button onClick={onEditContent}>Edit</button>
-          <button onClick={onDelete}>Delete</button>
-        </div>
-      </div>
+      
+      {/* 3. BOTTOM: The footer row is now empty or omitted in list view */}
     </div>
   );
 }
