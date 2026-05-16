@@ -1,17 +1,20 @@
 import React, { useState } from 'react';
 import { PostItem } from './components/PostItem';
 import { AddItemForm } from './components/AddItemForm';
-import { TagSearch } from './components/TagSearch'; // 1. Import Search Bar
+import { TagSearch } from './components/TagSearch';
 import "./App.css";
 
-// Remember to use 'import type' for your types!
 import type { TextEntry, EditMode } from './types/post.types';
 
 function App() {
   const [texts, setTexts] = useState<TextEntry[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editMode, setEditMode] = useState<EditMode>(null);
-  const [searchQuery, setSearchQuery] = useState(''); // 2. Search State
+  const [searchQuery, setSearchQuery] = useState('');
+  
+  
+  // 1. New state to track the single expanded post
+  const [expandedId, setExpandedId] = useState<number | null>(null);
 
   const handleAddItem = (content: string) => {
     setTexts([...texts, { id: Date.now(), content, tags: "" }]);
@@ -39,49 +42,100 @@ function App() {
     setEditMode(null);
   };
 
+  const handleBackToList = () => {
+    setExpandedId(null);
+    setEditingId(null);
+    setEditMode(null);
+  };
+  
+
   const handleDeleteItem = (id: number) => {
     setTexts(texts.filter(t => t.id !== id));
+    // If the open item is deleted, kick user back to list
+    if (expandedId === id) setExpandedId(null);
   };
 
-  // 3. THE FILTER MAGIC
-  // This takes your original master list and calculates a temporary 
-  // filtered list on every single keystroke.
   const filteredTexts = texts.filter((item) => {
-    // If search is empty, show everything
     if (!searchQuery.trim()) return true;
-
-    // Clean up the search term (remove '#' if the user types it)
     const cleanQuery = searchQuery.replace('#', '').toLowerCase().trim();
-
-    // Check if any tag inside the item contains the search string
-    return item.tags
-      .toLowerCase()
-      .split(',')
-      .some(tag => tag.trim().includes(cleanQuery));
+    return item.tags.toLowerCase().split(',').some(tag => tag.trim().includes(cleanQuery));
   });
+
+  // 2. Find the object if an item is expanded
+  const expandedItem = texts.find(t => t.id === expandedId);
 
   return (
     <div className="container">
-      {/* 4. Place Search bar at the top */}
-      <TagSearch value={searchQuery} onChange={setSearchQuery} />
+      {/* CONDITION A: Show Single Expanded Post */}
+      {expandedItem ? (
+        <div className="expanded-view-container" style={{ width: '100%', maxWidth: '80vw' }}>
+          <button 
+            onClick={handleBackToList} 
+            className="back-button"
+            style={{ marginBottom: '15px', padding: '6px 12px', cursor: 'pointer' }}
+          >
+            ← Back to List
+          </button>
+          
+          <ul className="list" style={{ border: 'none' }}>
+            <PostItem 
+              item={expandedItem}
+              editingId={editingId}
+              editMode={editMode}
+              onSaveEdit={handleSaveEdit}
+              onCancelEdit={handleCancelEdit}
+            />
+          </ul>
 
-      {/* 5. Loop through filteredTexts instead of texts */}
-      <ul className="list">
-        {filteredTexts.map((item) => (
-          <PostItem 
-            key={item.id}
-            item={item}
-            editingId={editingId}
-            editMode={editMode}
-            onStartEdit={handleStartEdit}
-            onSaveEdit={handleSaveEdit}
-            onCancelEdit={handleCancelEdit}
-            onDelete={handleDeleteItem}
-          />
-        ))}
-        
-        <AddItemForm onAdd={handleAddItem} />
-      </ul>
+          {/* NEW: Dedicated Expanded Control Toolbar */}
+          {/* Only show these management options if the item isn't actively being edited right now */}
+          {editingId !== expandedItem.id && (
+            <div className="expanded-toolbar" style={{ display: 'flex', gap: '10px', marginTop: '15px', justifyContent: 'flex-end' }}>
+              <button onClick={() => handleStartEdit(expandedItem.id, 'TAGS')}>Edit Tags</button>
+              <button onClick={() => handleStartEdit(expandedItem.id, 'CONTENT')}>Edit Content</button>
+              <button 
+                onClick={() => handleDeleteItem(expandedItem.id)}
+                style={{ backgroundColor: '#dc3545', color: 'white', border: 'none', padding: '6px 12px', cursor: 'pointer', borderRadius: '4px' }}
+              >
+                Delete Post
+              </button>
+            </div>
+          )}
+        </div>
+      ) : (
+        <>
+        {/* CONDITION B: Show standard list view */}
+          <TagSearch value={searchQuery} onChange={setSearchQuery} />
+
+          <ul className="list">
+            {filteredTexts.map((item) => (
+              // We pass a way to expand the item down to the component
+              <div 
+                key={item.id} 
+                onClick={(e) => {
+                  // Prevent expanding if the user is clicking action buttons or inputting text
+                  const target = e.target as HTMLElement;
+                  if (target.tagName !== 'BUTTON' && target.tagName !== 'INPUT') {
+                    setExpandedId(item.id);
+                  }
+                }}
+                style={{ cursor: 'pointer' }}
+                className="clickable-post-wrapper"
+              >
+                <PostItem 
+                  item={item}
+                  editingId={editingId}
+                  editMode={editMode}
+                  onSaveEdit={handleSaveEdit}
+                  onCancelEdit={handleCancelEdit}
+                />
+              </div>
+            ))}
+            
+            <AddItemForm onAdd={handleAddItem} />
+          </ul>
+        </>
+      )}
     </div>
   );
 }
