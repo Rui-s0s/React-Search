@@ -5,14 +5,16 @@
   align-items: center;
   padding: 20px;
   width: 100%;
+  box-sizing: border-box;
 }
 
-/* The Add Form and the List are constrained to 400px */
+/* The Add Form and the List are constrained to 80% of the viewport width */
 .input-group, .list {
   width: 100%;
-  max-width: 400px;
+  max-width: 80vw;
 }
 
+/* --- ADD SECTION FORM --- */
 .input-group {
   display: flex;
   gap: 10px;
@@ -21,50 +23,95 @@
 
 .input-group input {
   flex: 1;
+  padding: 8px 12px;
+  font-size: 1rem;
 }
 
+.input-group button {
+  padding: 8px 16px;
+  cursor: pointer;
+}
+
+/* --- THE MAIN LIST --- */
 .list {
   list-style: none;
   padding: 0;
+  margin: 0;
 }
 
+/* Restored: This handles scrolling on a per-post level if content gets too tall */
 .list-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 12px;
-  padding: 8px;
-  border-bottom: 1px solid #eee;
-}
-
-/* Common container for both Edit and View modes */
-.item-wrapper {
-  display: flex;
-  gap: 10px;
   width: 100%;
-  align-items: center;
+  border-bottom: 1px solid #eee;
+  max-height: 250px;     /* Adjust this height limit to your liking */
+  overflow-y: auto;      /* Scrollbar appears directly on the post if content is huge */
+  overflow-x: hidden;
 }
 
-.content-area {
-  flex: 1;
+/* --- VIEW MODE: POST CONTAINER --- */
+.post-container {
+  display: flex;
+  flex-direction: column; 
+  width: 100%;
+  gap: 8px;              
+  padding: 15px;
+  box-sizing: border-box;
 }
 
-.content-area strong {
-  margin-right: 10px;
+/* 1. Tags Container (Now at the top) */
+.tags-container {
+  width: 100%;
+  white-space: nowrap;      /* Forces all tags to stay on a single line */
+  overflow: hidden;         /* Hides any tags that drift past the container edge */
+  text-overflow: ellipsis;  /* Appends the "..." automatically when cut off */
+  display: block;           /* Block display is required for text-overflow ellipsis to work */
 }
 
+/* Clear gray tags styling */
 .tag {
-  color: #007bff;
+  color: #888888;           /* Clean, subtle gray */
   font-size: 0.9rem;
-  margin-right: 8px;
+  display: inline-block;
+  margin-right: 8px;        /* Spaces out the inline elements */
+}
+
+/* 2. Content Area (Middle Block) */
+.content-area {
+  width: 100%;
+  word-break: break-word; 
+  font-size: 1.1rem;
+}
+
+/* 3. Footer Row (Bottom Block) */
+.item-footer {
+  display: flex;
+  width: 100%;
+  justify-content: flex-end; /* Keeps actions on the right side */
+  margin-top: 4px;
 }
 
 .actions {
   display: flex;
-  gap: 5px;
+  gap: 8px;
 }
 
-/* Makes the edit input grow to fill space */
+.actions button {
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+/* --- EDIT MODE --- */
+.item-wrapper {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  align-items: center;  
+  padding: 15px;
+  box-sizing: border-box;
+}
+
 .edit-input {
   flex: 1;
+  padding: 6px 10px;
+  font-size: 1rem;
 }

@@ -41,7 +41,7 @@ function App() {
       if (t.id === id) {
         return editMode === 'CONTENT' 
           ? { ...t, content: editValue } 
-          : { ...t, tags: editValue };
+          : { ...t, tags: editValue };  
       }
       return t;
     }));
@@ -59,49 +59,48 @@ function App() {
           return (
             <li key={item.id} className="list-item">
               {isEditing ? (
-                // --- MODE: EDITING ---
-                <div className="item-wrapper">
+                // --- EDITING UI ---
+                <div className="item-wrapper" style={{ width: '100%' }}>
                   <input 
                     className="edit-input"
                     value={editValue} 
                     onChange={(e) => setEditValue(e.target.value)} 
                     autoFocus 
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        saveEdit(item.id);
-                      } else if (e.key === 'Escape') {
-                        setEditingId(null);
-                        setEditMode(null);
-                      }
-                    }} 
-                    placeholder={editMode === 'TAGS' ? "Edit tags..." : "Edit content..."}
+                      if (e.key === 'Enter') saveEdit(item.id);
+                      if (e.key === 'Escape') { setEditingId(null); setEditMode(null); }
+                    }}
                   />
-                  <div className="actions">
-                    <button onClick={() => saveEdit(item.id)}>Save</button>
-                    <button onClick={() => { setEditingId(null); setEditMode(null); }}>Cancel</button>
-                  </div>
                 </div>
               ) : (
-                // --- MODE: VIEWING ---
-                <div className="item-wrapper">
-                  <div className="content-area">
-                    <strong>{item.content}</strong>
-                    <span className="tags-container">
+                // --- VIEWING UI ---
+                <>
+                  <div className="post-container">
+                    {/* 1. TOP: Tags row with ellipsis handling */}
+                    <div className="tags-container">
                       {item.tags.split(',')
                         .filter(t => t.trim() !== "")
                         .map((tag, index) => (
                           <span key={index} className="tag">#{tag.trim()}</span>
                         ))
                       }
-                    </span>
-                  </div>
+                    </div>
 
-                  <div className="actions">
-                    <button onClick={() => startEditingTags(item)}>Tags</button>
-                    <button onClick={() => startEditingContent(item)}>Edit</button>
-                    <button onClick={() => setTexts(texts.filter(t => t.id !== item.id))}>Delete</button>
+                    {/* 2. MIDDLE: Content Area that scrolls if it gets too big */}
+                    <div className="content-area">
+                      <strong>{item.content}</strong>
+                    </div>
+
+                    {/* 3. BOTTOM: Just the actions pinned to the right side */}
+                    <div className="item-footer">
+                      <div className="actions">
+                        <button onClick={() => startEditingTags(item)}>Tags</button>
+                        <button onClick={() => startEditingContent(item)}>Edit</button>
+                        <button onClick={() => setTexts(texts.filter(t => t.id !== item.id))}>Delete</button>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                </>
               )}
             </li>
           );
